@@ -17,16 +17,14 @@ type UserService struct {
 	qry      users.UQuery
 	pu       utils.PasswordUtilityInterface
 	tu       utils.TokenUtilityInterface
-	cu       utils.CloudinaryUtilityInterface
 	validate *validator.Validate
 }
 
-func NewUserService(q users.UQuery, p utils.PasswordUtilityInterface, t utils.TokenUtilityInterface, c utils.CloudinaryUtilityInterface) users.UService {
+func NewUserService(q users.UQuery, p utils.PasswordUtilityInterface, t utils.TokenUtilityInterface) users.UService {
 	return &UserService{
 		qry:      q,
 		pu:       p,
 		tu:       t,
-		cu:       c,
 		validate: validator.New(),
 	}
 }
@@ -113,7 +111,10 @@ func (us *UserService) GetAllUsers(currentPage int) (int, string, []users.User, 
 	offset := limit * (currentPage - 1)
 
 	result, totalItems, err := us.qry.GetAllUsers(currentPage, limit, offset)
-	if err != nil {
+	if err == gorm.ErrRecordNotFound {
+		log.Println("user not found", err)
+		return 404, "user not found", []users.User{}, 0
+	} else if err != nil {
 		log.Println("error fetching user data from database.", err)
 		return 500, "error fetching user data from database", []users.User{}, 0
 	}
@@ -136,7 +137,7 @@ func (us *UserService) GetUser(id int) (int, string, users.User) {
 }
 
 func (us *UserService) UpdateUser(c echo.Context, id int, input users.User) (int, string) {
-	// Check if operation performed by the users themselves or the Admin
+	// Check if operation performed by the user themself or the Admin
 	loginData := us.tu.DecodeToken(c.Get("user").(*jwt.Token))
 	if id != loginData.UserID {
 		log.Println("access denied. mismatched user id between request body and jwt.")
@@ -157,7 +158,7 @@ func (us *UserService) UpdateUser(c echo.Context, id int, input users.User) (int
 	}
 
 	// Upload Avatar to Cloudinary
-	input.Avatar, err = us.cu.UploadAvatar(c, id)
+	input.Avatar, err = utils.UploadAvatar(c, id)
 	if err != nil {
 		log.Println("error uploading avatar to cloudinary.", err)
 		return 500, "error uploading avatar to cloudinary"
