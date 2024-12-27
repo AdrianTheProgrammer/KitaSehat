@@ -16,15 +16,13 @@ type ENV struct {
 	host     string
 	port     string
 	dbname   string
-	jwtkey   string
-	supabase string
 }
 
-func DBConnect() (*gorm.DB, ENV) {
+func DBConnect() *gorm.DB {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Println(err)
-		return nil, ENV{}
+		return nil
 	}
 
 	env := ENV{
@@ -33,8 +31,6 @@ func DBConnect() (*gorm.DB, ENV) {
 		host:     os.Getenv("host"),
 		port:     os.Getenv("port"),
 		dbname:   os.Getenv("dbname"),
-		jwtkey:   os.Getenv("jwtkey"),
-		supabase: os.Getenv("supabase"),
 	}
 
 	connectionString := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v", env.user, env.password, env.host, env.port, env.dbname)
@@ -43,5 +39,5 @@ func DBConnect() (*gorm.DB, ENV) {
 		log.Println(err)
 	}
 
-	return db, env
+	return db
 }

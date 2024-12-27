@@ -10,7 +10,7 @@ type SurveyHandler struct {
 	srv surveys.SService
 }
 
-func NewServiceHandler(s surveys.SService) surveys.SHandler {
+func NewSurveyHandler(s surveys.SService) surveys.SHandler {
 	return &SurveyHandler{
 		srv: s,
 	}

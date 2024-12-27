@@ -1,7 +1,7 @@
 package main
 
 import (
-	"net/http"
+	"KitaSehat_Backend/internal/factory"
 
 	"github.com/labstack/echo/v4"
 )
@@ -9,13 +9,7 @@ import (
 func main() {
 	e := echo.New()
 
-	// db, env := configs.DBConnect()
-
-	e.GET("/hello", hello)
+	factory.InitFactory(e)
 
 	e.Start(":8000")
-}
-
-func hello(c echo.Context) error {
-	return c.JSON(http.StatusOK, "Hello, World!")
 }
